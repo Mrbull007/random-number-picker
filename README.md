@@ -3,9 +3,6 @@
 **A beautiful, lightweight, and fully functional random number generator**  
 Built as a single-file web app — perfect for lotteries, crypto seed phrases, giveaways, games, or just pure fun.
 
-![Demo](https://via.placeholder.com/800x400/22c55e/ffffff?text=Random+Picker+Demo)  
-*(Replace this with a screenshot after you deploy)*
-
 ## ✨ Features
 
 - ⚡ Instant random number between **1 and 100,000**
