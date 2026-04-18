@@ -17,7 +17,7 @@ Built as a single-file web app — perfect for lotteries, crypto seed phrases, g
 ## 🚀 Live Demo
 
 After you push the code and enable GitHub Pages, your live link will be:  
-`https://YOUR_USERNAME.github.io/random-number-picker`
+`https://Mrbull007.github.io/random-number-picker`
 
 ## 🛠️ How to Run Locally
 
