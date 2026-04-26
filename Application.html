@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEON LUCKY • Random Number Picker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        
+        :root {
+            --neon-cyan: #22d3ee;
+            --neon-pink: #f472b6;
+            --neon-purple: #c026d3;
+        }
+        
+        body {
+            font-family: 'Press Start 2P', system-ui;
+        }
+        
+        .neon-text {
+            text-shadow: 
+                0 0 10px var(--neon-cyan),
+                0 0 20px var(--neon-cyan),
+                0 0 40px var(--neon-pink);
+        }
+        
+        .glass {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        
+        .number-ball {
+            animation: popIn 0.6s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            box-shadow: 
+                0 0 30px var(--neon-cyan),
+                0 0 60px var(--neon-pink);
+        }
+        
+        @keyframes popIn {
+            0% { transform: scale(0.2) rotate(-180deg); opacity: 0; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
+        }
+        
+        .rolling {
+            animation: roll 0.15s infinite linear;
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            animation: confetti-fall 3s linear forwards;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-[#0a0a2a] via-[#1a0033] to-[#2a0033] text-white overflow-x-hidden">
+    <!-- Navbar -->
+    <nav class="border-b border-white/10 bg-black/30 backdrop-blur-xl sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-gradient-to-br from-cyan-400 to-pink-500 rounded-2xl flex items-center justify-center text-3xl shadow-[0_0_25px_#22d3ee]">
+                    🎰
+                </div>
+                <h1 class="text-3xl font-bold neon-text tracking-widest">NEON LUCKY</h1>
+            </div>
+            <div class="flex items-center gap-8 text-sm uppercase tracking-widest">
+                <button onclick="toggleDarkMode()" 
+                        class="flex items-center gap-2 hover:text-cyan-400 transition-colors">
+                    <span id="theme-icon">🌙</span>
+                    <span>DARK MODE</span>
+                </button>
+                <a href="#" onclick="resetAll()" 
+                   class="px-6 py-2 bg-white/10 hover:bg-white/20 rounded-3xl transition-all active:scale-95">
+                    RESET ALL
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto px-6 py-12">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- LEFT PANEL: CONTROLS -->
+            <div class="lg:col-span-4 space-y-8">
+                <div class="glass rounded-3xl p-8">
+                    <h2 class="text-cyan-400 text-xl mb-6 flex items-center gap-3">
+                        <span class="text-3xl">⚙️</span>
+                        PICK SETTINGS
+                    </h2>
+                    
+                    <!-- Range -->
+                    <div class="mb-8">
+                        <div class="flex justify-between text-xs mb-3 text-white/70">
+                            <span>MIN NUMBER</span>
+                            <span>MAX NUMBER</span>
+                        </div>
+                        <div class="flex gap-4">
+                            <input id="min" type="number" value="1" 
+                                   class="w-full bg-black/60 border border-cyan-400/50 focus:border-cyan-400 rounded-2xl px-6 py-4 text-3xl text-center outline-none">
+                            <div class="flex items-center text-4xl text-white/30">→</div>
+                            <input id="max" type="number" value="100" 
+                                   class="w-full bg-black/60 border border-pink-400/50 focus:border-pink-400 rounded-2xl px-6 py-4 text-3xl text-center outline-none">
+                        </div>
+                    </div>
+
+                    <!-- Count -->
+                    <div class="mb-8">
+                        <div class="flex justify-between items-baseline text-xs mb-3 text-white/70">
+                            <span>HOW MANY NUMBERS?</span>
+                            <span id="count-value" class="text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-pink-400">5</span>
+                        </div>
+                        <input type="range" id="count" min="1" max="12" value="5" step="1"
+                               oninput="document.getElementById('count-value').textContent = this.value"
+                               class="w-full accent-cyan-400">
+                    </div>
+
+                    <!-- Unique Toggle -->
+                    <div class="flex items-center justify-between bg-black/40 rounded-2xl p-4 mb-8">
+                        <div class="flex items-center gap-3">
+                            <div class="text-3xl">🔄</div>
+                            <div>
+                                <p class="font-bold">Unique Numbers Only</p>
+                                <p class="text-xs text-white/60">No duplicates</p>
+                            </div>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="unique" checked class="sr-only peer">
+                            <div class="w-14 h-8 bg-white/20 rounded-3xl peer peer-checked:bg-gradient-to-r peer-checked:from-cyan-400 peer-checked:to-pink-400"></div>
+                            <div class="absolute left-1 top-1 w-6 h-6 bg-white rounded-3xl transition-all peer-checked:translate-x-6"></div>
+                        </label>
+                    </div>
+
+                    <!-- Exclude -->
+                    <div class="mb-6">
+                        <p class="text-xs mb-3 text-white/70">EXCLUDE NUMBERS (optional)</p>
+                        <div class="flex gap-2">
+                            <input id="exclude-input" type="text" placeholder="e.g. 7, 42, 88" 
+                                   class="flex-1 bg-black/60 border border-white/30 focus:border-pink-400 rounded-2xl px-6 py-4 text-lg outline-none">
+                            <button onclick="addExclude()" 
+                                    class="px-8 bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 rounded-2xl font-bold text-sm transition-all active:scale-95">
+                                ADD
+                            </button>
+                        </div>
+                        <div id="exclude-list" class="flex flex-wrap gap-2 mt-4"></div>
+                    </div>
+
+                    <!-- PICK BUTTON -->
+                    <button onclick="pickNumbers()" 
+                            id="pick-btn"
+                            class="w-full py-7 text-4xl font-bold bg-gradient-to-r from-cyan-400 via-pink-400 to-purple-400 hover:from-cyan-500 hover:via-pink-500 hover:to-purple-500 rounded-3xl shadow-[0_0_40px_-10px] shadow-cyan-400 transition-all active:scale-95 flex items-center justify-center gap-4">
+                        <span id="btn-text">🎲 PICK NOW</span>
+                        <div id="spinner" class="hidden w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+                    </button>
+                </div>
+
+                <!-- Quick Presets -->
+                <div class="glass rounded-3xl p-6">
+                    <p class="text-xs text-white/60 mb-4 uppercase tracking-widest">Quick Lottery Presets</p>
+                    <div class="grid grid-cols-3 gap-3">
+                        <button onclick="quickPreset(1,50,6)" 
+                                class="py-4 text-sm bg-white/10 hover:bg-white/20 rounded-2xl transition-all">6/50</button>
+                        <button onclick="quickPreset(1,100,5)" 
+                                class="py-4 text-sm bg-white/10 hover:bg-white/20 rounded-2xl transition-all">5/100</button>
+                        <button onclick="quickPreset(1,69,5,true)" 
+                                class="py-4 text-sm bg-white/10 hover:bg-white/20 rounded-2xl transition-all flex items-center justify-center gap-1">
+                            POWER<span class="text-amber-400">★</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT PANEL: RESULTS -->
+            <div class="lg:col-span-8">
+                <div class="glass rounded-3xl p-8 h-full flex flex-col">
+                    <div class="flex justify-between items-center mb-8">
+                        <h2 class="text-2xl font-bold flex items-center gap-3">
+                            <span class="text-4xl">✨</span>
+                            YOUR LUCKY NUMBERS
+                        </h2>
+                        <div onclick="copyToClipboard()" 
+                             class="flex items-center gap-2 text-cyan-400 hover:text-white cursor-pointer transition-colors">
+                            📋 <span class="text-sm uppercase tracking-widest">Copy</span>
+                        </div>
+                    </div>
+
+                    <!-- Results Display -->
+                    <div id="results" class="min-h-[260px] flex-1 flex items-center justify-center flex-wrap gap-6">
+                        <!-- JS will inject number balls here -->
+                        <div class="text-center text-white/30 text-xl font-light tracking-widest">
+                            Click <span class="text-cyan-400">"PICK NOW"</span> to generate magic ✨
+                        </div>
+                    </div>
+
+                    <!-- Rolling animation container (hidden by default) -->
+                    <div id="rolling-container" class="hidden absolute inset-0 bg-black/80 backdrop-blur-3xl rounded-3xl flex items-center justify-center z-10">
+                        <div class="text-center">
+                            <div class="text-8xl mb-6 animate-bounce">🎰</div>
+                            <div id="rolling-numbers" class="text-7xl font-bold text-cyan-400 flex justify-center gap-8"></div>
+                            <p class="mt-8 text-white/60 text-sm tracking-widest">SPINNING THE LUCK...</p>
+                        </div>
+                    </div>
+
+                    <!-- History -->
+                    <div class="mt-auto pt-8 border-t border-white/10">
+                        <p class="text-xs text-white/60 mb-4 flex items-center justify-between">
+                            <span>PREVIOUS PICKS <span id="history-count" class="text-cyan-400">0</span></span>
+                            <span onclick="clearHistory()" class="cursor-pointer hover:text-pink-400">CLEAR HISTORY</span>
+                        </p>
+                        <div id="history" class="flex gap-3 overflow-x-auto pb-4"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer tip -->
+    <div class="text-center py-8 text-xs text-white/40 tracking-widest">
+        Built with pure neon vibes • Works offline • Made for you 🚀
+    </div>
+
+    <canvas id="confetti" class="fixed inset-0 pointer-events-none z-50"></canvas>
+
+    <script>
+        // Tailwind script already loaded
+        function initTailwind() {
+            tailwind.config = {
+                content: [],
+                theme: {
+                    extend: {}
+                }
+            }
+        }
+
+        // State
+        let history = []
+        let excluded = []
+
+        // Generate random numbers
+        function getRandomNumbers(min, max, count, unique) {
+            min = parseInt(min)
+            max = parseInt(max)
+            count = parseInt(count)
+
+            if (min > max) [min, max] = [max, min]
+            
+            const available = []
+            for (let i = min; i <= max; i++) {
+                if (!excluded.includes(i)) available.push(i)
+            }
+            
+            if (available.length === 0) return []
+            
+            if (!unique) {
+                // Allow duplicates
+                return Array.from({ length: count }, () => {
+                    return available[Math.floor(Math.random() * available.length)]
+                })
+            }
+            
+            // Unique only
+            if (count > available.length) count = available.length
+            
+            // Fisher-Yates shuffle
+            const shuffled = [...available]
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+            }
+            return shuffled.slice(0, count)
+        }
+
+        // Rolling animation
+        async function startRollingAnimation(finalNumbers) {
+            const container = document.getElementById('rolling-container')
+            const rollingDisplay = document.getElementById('rolling-numbers')
+            container.classList.remove('hidden')
+            
+            // Fake rolling for 2 seconds
+            let rolls = 0
+            const interval = setInterval(() => {
+                rolls++
+                rollingDisplay.innerHTML = ''
+                
+                finalNumbers.forEach(() => {
+                    const fake = Math.floor(Math.random() * 999) + 1
+                    const div = document.createElement('div')
+                    div.className = 'rolling px-6 py-3 bg-black/60 rounded-3xl border border-cyan-400 text-6xl font-bold'
+                    div.textContent = String(fake).padStart(3, '0')
+                    rollingDisplay.appendChild(div)
+                })
+                
+                if (rolls > 12) {
+                    clearInterval(interval)
+                    // Show final numbers
+                    setTimeout(() => {
+                        container.classList.add('hidden')
+                        displayResults(finalNumbers)
+                    }, 600)
+                }
+            }, 160)
+        }
+
+        // Display beautiful results
+        function displayResults(numbers) {
+            const container = document.getElementById('results')
+            container.innerHTML = ''
+            
+            numbers.forEach((num, index) => {
+                const div = document.createElement('div')
+                div.className = `number-ball w-28 h-28 flex items-center justify-center text-6xl font-bold rounded-3xl border-4 border-cyan-400 bg-gradient-to-br from-black to-[#1a0033] cursor-pointer transition-all hover:scale-110`
+                div.style.setProperty('--neon-cyan', index % 2 === 0 ? '#22d3ee' : '#f472b6')
+                div.textContent = num
+                container.appendChild(div)
+            })
+            
+            // Launch confetti
+            launchConfetti()
+            
+            // Save to history
+            saveToHistory(numbers)
+        }
+
+        // Confetti explosion
+        function launchConfetti() {
+            const canvas = document.getElementById('confetti')
+            const ctx = canvas.getContext('2d')
+            canvas.width = window.innerWidth
+            canvas.height = window.innerHeight
+            
+            const colors = ['#22d3ee', '#f472b6', '#c026d3', '#a5f3fc', '#f9a8d4']
+            const particles = []
+            
+            for (let i = 0; i < 180; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height / 2,
+                    size: Math.random() * 14 + 8,
+                    speed: Math.random() * 8 + 6,
+                    angle: Math.random() * 360,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    rotation: Math.random() * 360
+                })
+            }
+            
+            let frame = 0
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height)
+                
+                particles.forEach((p, i) => {
+                    p.y += p.speed
+                    p.rotation += 8
+                    p.speed += 0.12
+                    
+                    ctx.save()
+                    ctx.translate(p.x, p.y)
+                    ctx.rotate(p.rotation * Math.PI / 180)
+                    ctx.fillStyle = p.color
+                    ctx.globalAlpha = Math.max(0, 1 - (p.y / canvas.height))
+                    ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size)
+                    ctx.restore()
+                    
+                    if (p.y > canvas.height) particles.splice(i, 1)
+                })
+                
+                frame++
+                if (particles.length > 0 && frame < 120) {
+                    requestAnimationFrame(animate)
+                } else {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height)
+                }
+            }
+            animate()
+            
+            // Auto clear canvas after animation
+            setTimeout(() => {
+                ctx.clearRect(0, 0, canvas.width, canvas.height)
+            }, 3500)
+        }
+
+        // Main pick function
+        function pickNumbers() {
+            const min = document.getElementById('min').value
+            const max = document.getElementById('max').value
+            const count = document.getElementById('count').value
+            const unique = document.getElementById('unique').checked
+            
+            const btn = document.getElementById('pick-btn')
+            const btnText = document.getElementById('btn-text')
+            const spinner = document.getElementById('spinner')
+            
+            btn.disabled = true
+            btnText.classList.add('hidden')
+            spinner.classList.remove('hidden')
+            
+            // Small delay so user sees the button press
+            setTimeout(() => {
+                const numbers = getRandomNumbers(min, max, count, unique)
+                
+                if (numbers.length === 0) {
+                    alert("❌ No numbers available! Check your range or exclusions.")
+                    btn.disabled = false
+                    btnText.classList.remove('hidden')
+                    spinner.classList.add('hidden')
+                    return
+                }
+                
+                startRollingAnimation(numbers)
+                
+                // Re-enable button
+                setTimeout(() => {
+                    btn.disabled = false
+                    btnText.classList.remove('hidden')
+                    spinner.classList.add('hidden')
+                }, 2800)
+            }, 320)
+        }
+
+        function saveToHistory(numbers) {
+            const timestamp = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+            history.unshift({ numbers: [...numbers], time: timestamp })
+            if (history.length > 8) history.pop()
+            
+            renderHistory()
+        }
+
+        function renderHistory() {
+            const container = document.getElementById('history')
+            container.innerHTML = ''
+            document.getElementById('history-count').textContent = history.length
+            
+            history.forEach(entry => {
+                const div = document.createElement('div')
+                div.className = 'glass px-5 py-3 rounded-2xl flex-shrink-0 flex flex-col items-center cursor-pointer hover:scale-105 transition-all'
+                div.innerHTML = `
+                    <d
